@@ -167,10 +167,6 @@ def show_venue(venue_id):
   past_shows = []
   upcoming_shows = []
 
-  upcoming_shows_results = venue_data.show
-  past_shows_results = venue_data.show
-  
-
   for show in shows_data:
     show_details = {
       "artist_id": show.artist_id,
