@@ -237,3 +237,4 @@ class ArtistForm(Form):
             'seeking_description'
      )
 
+

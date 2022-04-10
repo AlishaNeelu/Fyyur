@@ -47,11 +47,11 @@ class Venue(db.Model):
     website = db.Column(db.String(120))
     seeking_talent = db.Column(db.Boolean)
     seeking_description = db.Column(db.String(500))
-    upcoming_shows_count =db.Column(db.Integer)
-    past_shows_count = db.Column(db.Integer)
+
+
 
     # Set Relationship between Venue and Show Model's
-    show = db.relationship("Show",backref='venue',lazy=True)
+    show = db.relationship("Show",backref='venue',lazy=True, cascade="save-update, merge,delete")
 
 class Artist(db.Model):
     __tablename__ = 'Artist'
@@ -69,11 +69,10 @@ class Artist(db.Model):
     website = db.Column(db.String(120))
     seeking_venue = db.Column(db.Boolean)
     seeking_description = db.Column(db.String(500))
-    upcoming_shows_count = db.Column(db.Integer)
-    past_shows_count = db.Column(db.Integer)
+
 
     # Set Relationship between Artist and Show Model's
-    show = db.relationship("Show",backref='artist',lazy=True)
+    show = db.relationship("Show",backref='artist',lazy=True, cascade="save-update, merge,delete")
 
 
 
@@ -247,7 +246,8 @@ def delete_venue(venue_id):
   # TODO: Complete this endpoint for taking a venue_id, and using
   # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail. (done)
   try:
-    Venue.query.filter(Venue.id == venue_id).delete()
+    venue = Venue.query.get(venue_id)
+    db.session.delete(venue)
     flash('Venue succesfully deleted')
     db.session.commit()
   except:
