@@ -29,60 +29,7 @@ migrate = Migrate(app,db)
 # Models.
 #----------------------------------------------------------------------------#
 
-class Venue(db.Model):
-    __tablename__ = 'Venue'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
-    address = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
-
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate (done)
-
-    genres = db.Column(db.String(120))
-    website = db.Column(db.String(120))
-    seeking_talent = db.Column(db.Boolean)
-    seeking_description = db.Column(db.String(500))
-
-
-
-    # Set Relationship between Venue and Show Model's
-    show = db.relationship("Show",backref='venue',lazy=True, cascade="save-update, merge,delete")
-
-class Artist(db.Model):
-    __tablename__ = 'Artist'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
-    genres = db.Column(db.String(120))
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
-
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate (done)
-    website = db.Column(db.String(120))
-    seeking_venue = db.Column(db.Boolean)
-    seeking_description = db.Column(db.String(500))
-
-
-    # Set Relationship between Artist and Show Model's
-    show = db.relationship("Show",backref='artist',lazy=True, cascade="save-update, merge,delete")
-
-
-
-# TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.(done)
-class Show(db.Model):
-  __tablename__ = "Show"
-  id = db.Column(db.Integer, primary_key=True)
-  artist_id = db.Column(db.Integer,db.ForeignKey('Artist.id')) #fk from Artist Model
-  venue_id = db.Column(db.Integer,db.ForeignKey('Venue.id')) #fk from Venue Model
-  start_time = db.Column(db.DateTime)
+from model import *
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -224,12 +171,11 @@ def create_venue_submission():
     db.session.add(newvenue)
     db.session.commit()
     # on successful db insert, flash success
-    flash('Venue ' + request.form['name'] + ' was successfully listed!')
+    flash('Venue : {0} was successfully listed!'.format(newvenue.name))
     # TODO: on unsuccessful db insert, flash an error instead.
   except Exception as e:
-    print(e)
     db.session.rollback()
-    flash('An error occurred. Venue ' + request.form['name'] + ' could not be listed.')
+    flash('An error occurred creating the Venue. Error: {0} '.format(e))
     # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
   finally:
     db.session.close()
@@ -242,11 +188,11 @@ def delete_venue(venue_id):
   try:
     venue = Venue.query.get(venue_id)
     db.session.delete(venue)
-    flash('Venue succesfully deleted')
+    flash('Venue : {0} was successfully deleted!'.format(venue.name))
     db.session.commit()
-  except:
+  except Exception as e:
     db.session.rollback()
-    flash("Venue can't be deleted")
+    flash('An error occurred deleting the Venue : {0}. Error : {1} '.format(venue.name,e))
   finally:
     db.session.close()
   return render_template('pages/home.html')
@@ -366,12 +312,13 @@ def edit_artist_submission(artist_id):
     artist.seeking_description = request.form['seeking_description']
 
     db.session.commit()
-  except: 
+    flash('Artist : {0} was successfully updated!'.format(artist.name))
+  except Exception as e: 
     db.session.rollback()
-    flash('An error occurred. Artist could not be changed.')
+    flash('An error occurred. Artist : {0} could not be updated. Error : {1}'.format(artist.name,e))
   finally: 
     db.session.close()
-    flash('Artist was successfully updated!')
+    
   return redirect(url_for('show_artist', artist_id=artist_id))
 
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
@@ -417,10 +364,10 @@ def edit_venue_submission(venue_id):
     venue.seeking_talent = is_checked
     venue.seeking_description = request.form['seeking_description']
     db.session.commit()
-    flash(f'Venue was successfully updated!')
-  except:
+    flash('Venue : {0} was successfully updated!'.format(venue.name))
+  except Exception as e:
     db.session.rollback()
-    flash(f'An error occurred. Venue cant be updated at this time')
+    flash('An error occurred. Venue : {0} could not be updated at this time. Error : {1}'.format(venue.name,e))
   finally:
     db.session.close()
   return redirect(url_for('show_venue', venue_id=venue_id))
@@ -455,10 +402,10 @@ def create_artist_submission():
              seeking_venue=seeking_venue, seeking_description=seeking_description)
     db.session.add(artist)
     db.session.commit()
-    flash('Artist ' + request.form['name'] + ' was successfully listed!')
-  except: 
+    flash('Artist : {0} was successfully listed!'.format(artist.name))
+  except Exception as e: 
     db.session.rollback()
-    flash('An error occurred. Artist ' + request.form['name'] + ' could not be listed.')
+    flash('An error occurred. Artist could not be listed. Error : {0}'.format(e))
   finally: 
     db.session.close()
   # on successful db insert, flash success
